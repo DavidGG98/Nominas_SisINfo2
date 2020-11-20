@@ -8,6 +8,7 @@ package DAO;
 import java.util.ArrayList;
 import java.util.List;
 import modelo.Categorias;
+import org.hibernate.Session;
 
 /**
  *
@@ -15,9 +16,11 @@ import modelo.Categorias;
  */
 public interface CategoriasDAOInterface {
     public void insert (Categorias c);
+    public void insert (List <Categorias> c);
     public void update (Categorias c);
     public void delete(int id);
     public Categorias read(int id);
     public List<Categorias> readAll ();
     public void updateAllBut (Categorias c);
+    public void setSession (Session s);
 }

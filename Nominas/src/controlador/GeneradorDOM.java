@@ -31,7 +31,7 @@ import org.w3c.dom.Element;
  */
 public class GeneradorDOM {
 
-    private String ruta = "C:\\Users\\david\\Documents\\NetBeansProjects\\Nominas\\resources\\";
+    private String ruta = "resources/";
     private Document doc;
     private Element element;
 
@@ -41,7 +41,7 @@ public class GeneradorDOM {
         doc = builder.newDocument();
         switch (n) {
             case 0: //Errores trabajadores
-                element = doc.createElement("trabajadores");
+                element = doc.createElement("Trabajadores");
                 doc.appendChild(element);
                 break;
             case 1: //Errores Cuentas Banco
@@ -52,10 +52,10 @@ public class GeneradorDOM {
     }
 
     //Rellenamos el doc con la información que queramos
-    public void addTrabajador(Trabajadorbbdd t) {
+    public void addTrabajador(Trabajadorbbdd t, int c) {
         Element trabajador = doc.createElement("trabajador");
         try {
-            trabajador.setAttribute("Columna", Integer.toString(t.getIdTrabajador()));
+            trabajador.setAttribute("Columna", Integer.toString(c));
         } catch (Exception e) {
             System.out.println("Error al introducir el id (Columna) " + e);
         }
@@ -99,10 +99,10 @@ public class GeneradorDOM {
 
     }
 
-    public void addCuenta(Trabajadorbbdd t, String CC, String IBAN) {
+    public void addCuenta(Trabajadorbbdd t, String CC, String IBAN, int c) {
         Element cuenta = doc.createElement("cuenta");
         try {
-            cuenta.setAttribute("Columna", Integer.toString(t.getIdTrabajador()));
+            cuenta.setAttribute("Columna", Integer.toString(c));
         } catch (Exception e) {
             System.out.println("Error al introducir el id (Columna) " + e);
         }

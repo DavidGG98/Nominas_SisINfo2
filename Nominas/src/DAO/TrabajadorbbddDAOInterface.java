@@ -8,6 +8,7 @@ package DAO;
 import java.util.List;
 import modelo.Empresas;
 import modelo.Trabajadorbbdd;
+import org.hibernate.Session;
 
 /**
  *
@@ -16,11 +17,13 @@ import modelo.Trabajadorbbdd;
 public interface TrabajadorbbddDAOInterface {
     
     public void insert (Trabajadorbbdd t);
+    public void insert (List <Trabajadorbbdd> t);
     public void update (Trabajadorbbdd t);
     public void delete (int id);
     public void deleteAllFromCompany (Empresas e);
     public Trabajadorbbdd read(int id);
     public Trabajadorbbdd readNIF(String id);
     public List<Trabajadorbbdd> readAll ();
+    public void setSession (Session s);
     
 }

@@ -20,18 +20,22 @@ import org.hibernate.Transaction;
 public class TrabajadorbbddDAO implements TrabajadorbbddDAOInterface {
 
     private final SessionFactory sf = HibernateUtil.getSessionFactory();
-    private static Session session;
+    private  Session session;
     private static String consulta;
     private static Query query;
-    private static Transaction trans;
     
-
+    /*
     private void openSession () {
          session=sf.openSession();
     }
     
     private void closeSession() {
         session.close();
+    }
+    */
+    @Override
+    public void setSession (Session s) {
+        this.session = s;
     }
     
     @Override
@@ -40,17 +44,63 @@ public class TrabajadorbbddDAO implements TrabajadorbbddDAOInterface {
     }
 
     @Override
+    public void insert (List <Trabajadorbbdd> t) {
+        List<Trabajadorbbdd> all = readAll();
+        Transaction trans;
+        int id=0;
+        try {
+            trans = session.beginTransaction(); //Comenzamos la transacción
+            for (Trabajadorbbdd t1: t) {
+                boolean existe =false;
+                for (Trabajadorbbdd t2: all) {
+                    if (t2.getIdTrabajador() == id) {
+                        id++;
+                    }
+                    if (t1.getNombre().equalsIgnoreCase(t2.getNombre()) && t1.getNifnie().equalsIgnoreCase(t2.getNifnie()) && t1.getFechaAlta().equals(t2.getFechaAlta())) {
+                        //El trabajador ya existe => Actualizamos
+                        t2.setApellido1(t1.getApellido1());
+                        t2.setApellido2(t1.getApellido2());
+                        t2.setCategorias(t1.getCategorias());
+                        t2.setEmpresas(t1.getEmpresas());
+                        t2.setCodigoCuenta(t1.getCodigoCuenta());
+                        t2.setEmail(t1.getEmail());
+                        t2.setIban(t1.getIban());
+                        
+                        session.saveOrUpdate(t2); //Actualizamos
+                        existe=true;
+                        break;
+                    }
+                }
+                if (!existe) { //NO EXISTE LA EMPRESA LUEGO LA INTRODUCIMOS
+                    t1.setIdTrabajador(id);
+                    session.save(t1);
+                    id++;
+                }
+            }
+            //Acabamos de cargar todas las 
+            try {
+                trans.commit();
+                System.out.println("Actualización tabla trabajadores exitosa!!");
+            } catch (Exception ex) {
+                System.out.println("Se ha producido un error en el commit de la transacción "+ ex.getMessage());
+            }
+        } catch (Exception ex) {
+            System.out.println("Error al iniciar la transacción de trabajadores " + ex.getMessage());
+        }
+    }
+    @Override
     public void update(Trabajadorbbdd t) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public void delete (int id) {
-        openSession();
+        //openSession();
         //Para borrar a un trabajador, debemos primero eliminar sus nominas
         Trabajadorbbdd t= read (id); //Recuperamos el trabajador que vamos a borrar
+        Transaction trans;
         try {
-            openSession();
+            //openSession();
             trans=session.beginTransaction();
             NominaDAOInterface nDAO = new NominaDAO();
             //Eliminamos todaslas nominas del trabajador
@@ -61,7 +111,7 @@ public class TrabajadorbbddDAO implements TrabajadorbbddDAOInterface {
             query.setParameter("trabajador",t);
             query.executeUpdate();
             trans.commit();       
-            closeSession();
+            //closeSession();
         } catch (Exception e) {
             System.out.println("Error en la transacción "+ e.getMessage());
         }
@@ -70,9 +120,9 @@ public class TrabajadorbbddDAO implements TrabajadorbbddDAOInterface {
     
     @Override
     public void deleteAllFromCompany (Empresas e) {
-        
+        Transaction trans;
         try {
-            openSession();
+            //openSession();
             //Obtenemos los trabajadores de la empresa
             consulta = "SELECT t FROM Trabajadorbbdd t WHERE t.empresas = :empresa";
             query = session.createQuery(consulta);
@@ -106,7 +156,7 @@ public class TrabajadorbbddDAO implements TrabajadorbbddDAOInterface {
                 System.out.println("Error al realizar el borrado " + ex.getMessage());
             }
             
-            closeSession();
+            //closeSession();
         
     } catch (Exception ex) {
        System.out.println("Error al recoger los trabajadores de la emrpesa "+ ex.getMessage());
@@ -117,7 +167,7 @@ public class TrabajadorbbddDAO implements TrabajadorbbddDAOInterface {
     
     @Override
     public Trabajadorbbdd read (int id) {
-        openSession();
+        //openSession();
         
         consulta="SELECT n FROM Trabajadorbbdd n WHERE n.idTrabajador=:param1";
         try {
@@ -134,13 +184,13 @@ public class TrabajadorbbddDAO implements TrabajadorbbddDAOInterface {
             System.out.println("Error al crear la query " + e.getMessage());
         }
         
-        closeSession();
+        //closeSession();
         return null;
     }
 
     @Override
     public Trabajadorbbdd readNIF (String id) {
-        openSession();
+        //openSession();
         
         consulta="SELECT n FROM Trabajadorbbdd n WHERE n.nifnie=:param1";
         try {
@@ -157,23 +207,21 @@ public class TrabajadorbbddDAO implements TrabajadorbbddDAOInterface {
             System.out.println("Error al crear la query " + e.getMessage());
         }
         
-        closeSession();
+        //closeSession();
         return null;
     }
     
     
     @Override
-    public List<Trabajadorbbdd> readAll() {
-          List <Trabajadorbbdd> lista;
-        
+    public List<Trabajadorbbdd> readAll() {        
         try {
-            openSession();
+            //openSession();
             consulta="FROM Trabajadorbbdd";
             
             query= session.createQuery(consulta);
             
             try {
-                List listaResultado= query.list();
+                List<Trabajadorbbdd>listaResultado= query.list();
                 
                return listaResultado;
             } catch (Exception e) {
@@ -182,9 +230,7 @@ public class TrabajadorbbddDAO implements TrabajadorbbddDAOInterface {
             
         } catch (Exception e) {
             System.out.println("Error al conectarse con la base de datos: " + e.getMessage());
-        }
-        
-        
+        }      
         return null;
     }
     

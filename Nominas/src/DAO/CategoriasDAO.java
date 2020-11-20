@@ -8,6 +8,7 @@ package DAO;
 import java.util.ArrayList;
 import java.util.List;
 import modelo.Categorias;
+import modelo.Empresas;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -20,12 +21,11 @@ import org.hibernate.Transaction;
 public class CategoriasDAO implements CategoriasDAOInterface {
 
     private final SessionFactory sf = HibernateUtil.getSessionFactory();
-    private static Session session;
+    private Session session;
     private static String consulta;
     private static Query query;
-    private static Transaction trans;
     
-
+    /*
     private void openSession () {
          session=sf.openSession();
     }
@@ -33,10 +33,60 @@ public class CategoriasDAO implements CategoriasDAOInterface {
     private void closeSession() {
         session.close();
     }
+    */
+    
+    @Override
+    public void setSession (Session s) {
+        this.session=s;
+    }
     
     @Override
     public void insert(Categorias c) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    @Override
+    public void insert (List <Categorias> c) {
+        List<Categorias> all = readAll();
+        Transaction trans;
+        try {
+            trans = session.beginTransaction(); //Comenzamos la transacción
+            int id=0;
+            for (Categorias c1: c) {
+                boolean existe =false;
+                for (Categorias c2: all) {
+                    if (c2.getIdCategoria()==id) {
+                        id++;
+                    }
+                    if (c1.getNombreCategoria().equalsIgnoreCase(c2.getNombreCategoria())) {
+                        //MISMA CATEGORIA
+                        if (c1.getComplementoCategoria()!=c2.getComplementoCategoria() 
+                            || c1.getSalarioBaseCategoria()!= c2.getSalarioBaseCategoria()) {
+                            //DISTINTA PAGA => ACTUALIZAMOS
+                            c2.setComplementoCategoria(c1.getComplementoCategoria());
+                            c2.setSalarioBaseCategoria(c1.getSalarioBaseCategoria());
+                            session.saveOrUpdate(c2);
+                        }
+                        existe=true;
+                        break;
+                    }
+                }
+                if (!existe) { //NO EXISTE LA EMPRESA LUEGO LA INTRODUCIMOS
+                    c1.setIdCategoria(id);
+                    session.save(c1);
+                    id++;
+                }
+            }
+            //Acabamos de cargar todas las 
+            try {
+                trans.commit();
+                System.out.println("Actualización tabla categorias exitosa!!");
+            } catch (Exception ex) {
+                System.out.println("Se ha producido un error en el commit de la transacción "+ ex.getMessage());
+            }
+        } catch (Exception ex) {
+            System.out.println("Error al iniciar la transacción de categorias " + ex.getMessage());
+        }
     }
 
     @Override
@@ -57,7 +107,7 @@ public class CategoriasDAO implements CategoriasDAOInterface {
     public void updateAllBut (Categorias c) {
         List<Categorias> allCat = readAll();
         try {
-        trans = session.beginTransaction(); //Comenzamos la transacción
+        Transaction trans = session.beginTransaction(); //Comenzamos la transacción
         
         for (Categorias cat:allCat) {
             if (cat.getIdCategoria()!=c.getIdCategoria()) {
@@ -83,7 +133,7 @@ public class CategoriasDAO implements CategoriasDAOInterface {
 
     @Override
     public Categorias read(int id) {
-        openSession();
+        //openSession();
         
         consulta="Select n FROM Categorias n WHERE n.idCategoria=:param1";
         try {
@@ -100,7 +150,7 @@ public class CategoriasDAO implements CategoriasDAOInterface {
             System.out.println("Error al crear la query " + e.getMessage());
         }
         
-        closeSession();
+        //closeSession();
         return null;
     }
 
@@ -108,15 +158,15 @@ public class CategoriasDAO implements CategoriasDAOInterface {
     public List<Categorias> readAll() {
         
        List <Categorias> lista;
-        
+      
         try {
-            openSession();
+            //openSession();
             consulta="FROM Categorias";
             
             query= session.createQuery(consulta);
             
             try {
-                List listaResultado= query.list();
+                List <Categorias> listaResultado= query.list();
                 
                return listaResultado;
             } catch (Exception e) {

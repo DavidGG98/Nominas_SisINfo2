@@ -5,7 +5,9 @@
  */
 package DAO;
 
+import java.util.List;
 import modelo.Empresas;
+import org.hibernate.Session;
 
 
 /**
@@ -14,8 +16,11 @@ import modelo.Empresas;
  */
 public interface EmpresasDAOInterface {
     public void insert (Empresas e);
+    public void insert (List <Empresas> e);
     public void update (Empresas e);
     public void delete(int id);
+    public List <Empresas> readAll();
    // public void deleteAllWorkers(int id);
     public Empresas read(int id);
+    public void setSession(Session s);
 }
